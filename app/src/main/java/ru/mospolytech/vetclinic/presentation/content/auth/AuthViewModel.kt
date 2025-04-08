@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import ru.mospolytech.vetclinic.data.repository.AuthRepository
+import ru.mospolytech.vetclinic.domain.repository.AuthRepository
 import javax.inject.Inject
 
 abstract class AuthViewModel : ViewModel() {

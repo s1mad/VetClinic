@@ -4,8 +4,8 @@ import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST
 import ru.mospolytech.vetclinic.data.constant.VetClinicApiConstant
-import ru.mospolytech.vetclinic.data.model.SignInRequest
-import ru.mospolytech.vetclinic.data.model.SignInResponse
+import ru.mospolytech.vetclinic.data.model.auth.SignInRequest
+import ru.mospolytech.vetclinic.data.model.auth.SignInResponse
 
 interface AuthApi {
 

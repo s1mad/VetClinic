@@ -4,14 +4,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import ru.mospolytech.vetclinic.data.api.AuthApi
-import ru.mospolytech.vetclinic.data.model.SignInRequest
-import ru.mospolytech.vetclinic.data.model.SignInResult
+import ru.mospolytech.vetclinic.data.model.auth.SignInRequest
+import ru.mospolytech.vetclinic.data.model.auth.SignInResult
 import ru.mospolytech.vetclinic.data.util.AuthManager
+import ru.mospolytech.vetclinic.domain.repository.AuthRepository
 import javax.inject.Inject
-
-interface AuthRepository {
-    suspend fun signIn(email: String, password: String): SignInResult
-}
 
 class AuthRepositoryImpl @Inject constructor(
     private val authApi: AuthApi,

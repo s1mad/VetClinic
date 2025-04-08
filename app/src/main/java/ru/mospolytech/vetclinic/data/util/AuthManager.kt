@@ -1,5 +1,6 @@
 package ru.mospolytech.vetclinic.data.util
 
+import android.util.Base64
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -7,7 +8,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import ru.mospolytech.vetclinic.data.model.AuthorizationState
+import org.json.JSONObject
+import ru.mospolytech.vetclinic.data.model.auth.AuthorizationState
 import ru.mospolytech.vetclinic.data.store.TokenStore
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -18,6 +20,7 @@ interface AuthManager {
     suspend fun getToken(): String?
     suspend fun saveToken(token: String)
     suspend fun clearToken()
+    suspend fun getUserIdFromToken(): Int?
 
     fun checkAndUpdateAuthState()
 }
@@ -40,6 +43,28 @@ class AuthManagerImpl @Inject constructor(
     override suspend fun clearToken() {
         tokenStore.clear()
         _authState.update { AuthorizationState.UNAUTHORIZED }
+    }
+
+
+    override suspend fun getUserIdFromToken(): Int? {
+        val token = getToken() ?: return null
+        return try {
+            val parts = token.split(".")
+            if (parts.size != 3) {
+                return null
+            }
+
+            val payload = parts[1]
+            val decodedBytes = Base64.decode(payload, Base64.URL_SAFE or Base64.NO_WRAP)
+            val decodedPayload = String(decodedBytes)
+
+            val json = JSONObject(decodedPayload)
+
+            json.optInt("UserId", -1).takeIf { it != -1 }
+        } catch (e: Exception) {
+            println("Ошибка при парсинге JWT: $e")
+            null
+        }
     }
 
     override fun checkAndUpdateAuthState() {

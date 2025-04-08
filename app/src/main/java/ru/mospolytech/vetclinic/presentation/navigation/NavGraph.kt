@@ -1,15 +1,10 @@
 package ru.mospolytech.vetclinic.presentation.navigation
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -20,13 +15,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import ru.mospolytech.vetclinic.data.model.AuthorizationState.AUTHORIZED
-import ru.mospolytech.vetclinic.data.model.AuthorizationState.IDLE
-import ru.mospolytech.vetclinic.data.model.AuthorizationState.LOADING
-import ru.mospolytech.vetclinic.data.model.AuthorizationState.UNAUTHORIZED
+import ru.mospolytech.vetclinic.data.model.auth.AuthorizationState.AUTHORIZED
+import ru.mospolytech.vetclinic.data.model.auth.AuthorizationState.IDLE
+import ru.mospolytech.vetclinic.data.model.auth.AuthorizationState.LOADING
+import ru.mospolytech.vetclinic.data.model.auth.AuthorizationState.UNAUTHORIZED
 import ru.mospolytech.vetclinic.data.util.AuthManager
 import ru.mospolytech.vetclinic.presentation.content.auth.AuthContent
 import ru.mospolytech.vetclinic.presentation.content.auth.AuthViewModelImpl
+import ru.mospolytech.vetclinic.presentation.content.pet.PetInfoContent
+import ru.mospolytech.vetclinic.presentation.content.pet.PetInfoViewModelImpl
 
 @Composable
 fun NavGraph(
@@ -56,12 +53,12 @@ fun NavGraph(
     ) {
 
         composable<ContentDestination.Splash> {
-            Surface {
+            Scaffold { paddingValues ->
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .fillMaxSize()
-                        .windowInsetsPadding(WindowInsets.systemBars)
+                        .padding(paddingValues)
                 ) {
                     CircularProgressIndicator()
                 }
@@ -76,16 +73,10 @@ fun NavGraph(
         }
 
         composable<ContentDestination.PetInfo> {
-            Surface {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-                    .windowInsetsPadding(WindowInsets.systemBars)
-            ) {
-                Text("PetInfo")
-            }
-            }
+            PetInfoContent(
+                petInfoViewModel = hiltViewModel<PetInfoViewModelImpl>(),
+                modifier = modifier
+            )
         }
 
     }

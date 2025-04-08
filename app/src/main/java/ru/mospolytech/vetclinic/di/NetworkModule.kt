@@ -9,9 +9,11 @@ import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import ru.mospolytech.vetclinic.data.api.AuthApi
+import ru.mospolytech.vetclinic.data.api.PetApi
 import ru.mospolytech.vetclinic.data.constant.VetClinicApiConstant
 import ru.mospolytech.vetclinic.data.util.AuthManager
 import javax.inject.Singleton
@@ -45,9 +47,19 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(authInterceptor: Interceptor): OkHttpClient = OkHttpClient.Builder()
-        .addInterceptor(authInterceptor)
-        .build()
+    fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor {
+        val loggingInterceptor = HttpLoggingInterceptor()
+        loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+        return loggingInterceptor
+    }
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(authInterceptor: Interceptor, loggingInterceptor: HttpLoggingInterceptor): OkHttpClient =
+        OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .addInterceptor(authInterceptor)
+            .build()
 
     @Provides
     @Singleton
@@ -68,5 +80,9 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideAuthApi(retrofit: Retrofit): AuthApi = retrofit.create(AuthApi::class.java)
+
+    @Provides
+    @Singleton
+    fun providePetApi(retrofit: Retrofit): PetApi = retrofit.create(PetApi::class.java)
 
 }

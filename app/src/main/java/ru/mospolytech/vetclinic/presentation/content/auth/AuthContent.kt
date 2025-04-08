@@ -2,12 +2,12 @@ package ru.mospolytech.vetclinic.presentation.content.auth
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -42,19 +42,19 @@ fun AuthContent(
 ) {
     val state by viewModel.state.collectAsState()
 
-    val minHeight = 68.dp
+    val minHeight = 56.dp
 
     Surface(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .windowInsetsPadding(WindowInsets.systemBars)
-            .imePadding()
+        color = MaterialTheme.colorScheme.background,
+        modifier = modifier.fillMaxSize()
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .windowInsetsPadding(WindowInsets.systemBars)
+                .imePadding()
+                .padding(16.dp)
         ) {
             Text(
                 text = "Авторизация",
@@ -99,8 +99,8 @@ fun AuthContent(
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = minHeight)
                     .padding(top = 12.dp)
+                    .height(minHeight)
             ) {
                 AnimatedContent(
                     targetState = state.isLoading

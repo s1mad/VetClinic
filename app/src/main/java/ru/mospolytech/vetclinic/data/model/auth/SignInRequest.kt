@@ -1,4 +1,4 @@
-package ru.mospolytech.vetclinic.data.model
+package ru.mospolytech.vetclinic.data.model.auth
 
 import kotlinx.serialization.Serializable
 

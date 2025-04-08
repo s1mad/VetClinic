@@ -14,13 +14,19 @@ import androidx.compose.ui.platform.LocalContext
 private val LightColorScheme = lightColorScheme(
     primary = PrimaryLight,
     secondary = SecondaryLight,
-    tertiary = TertiaryLight
+    tertiary = TertiaryLight,
+    background = BackgroundLight,
+    surface = SurfaceLight,
+    surfaceVariant = SurfaceVariantLight
 )
 
 private val DarkColorScheme = darkColorScheme(
     primary = PrimaryDark,
     secondary = SecondaryDark,
-    tertiary = TertiaryDark
+    tertiary = TertiaryDark,
+    background = BackgroundDark,
+    surface = SurfaceDark,
+    surfaceVariant = SurfaceVariantDark
 )
 
 private val Shapes = Shapes(
@@ -34,7 +40,7 @@ private val Shapes = Shapes(
 @Composable
 fun VetClinicTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

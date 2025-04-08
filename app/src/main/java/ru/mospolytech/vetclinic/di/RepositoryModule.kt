@@ -1,24 +1,26 @@
 package ru.mospolytech.vetclinic.di
 
+import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import ru.mospolytech.vetclinic.data.api.AuthApi
-import ru.mospolytech.vetclinic.data.repository.AuthRepository
 import ru.mospolytech.vetclinic.data.repository.AuthRepositoryImpl
-import ru.mospolytech.vetclinic.data.util.AuthManager
+import ru.mospolytech.vetclinic.data.repository.PetRepositoryImpl
+import ru.mospolytech.vetclinic.domain.repository.AuthRepository
+import ru.mospolytech.vetclinic.domain.repository.PetRepository
 import javax.inject.Singleton
+
 
 @Module
 @InstallIn(SingletonComponent::class)
-object RepositoryModule {
+abstract class RepositoryBindsModule {
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideAuthRepository(authApi: AuthApi, authManager: AuthManager): AuthRepository = AuthRepositoryImpl(
-        authApi = authApi,
-        authManager = authManager
-    )
+    abstract fun bindAuthRepository(impl: AuthRepositoryImpl): AuthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPetRepository(impl: PetRepositoryImpl): PetRepository
 
 }

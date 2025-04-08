@@ -11,6 +11,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import ru.mospolytech.vetclinic.data.constant.StoreConstants
+import ru.mospolytech.vetclinic.data.store.PetStore
+import ru.mospolytech.vetclinic.data.store.PetStoreImpl
 import ru.mospolytech.vetclinic.data.store.TokenStore
 import ru.mospolytech.vetclinic.data.store.TokenStoreImpl
 import ru.mospolytech.vetclinic.data.util.AuthManager
@@ -40,6 +42,10 @@ abstract class StoreBindsModule {
     @Binds
     @Singleton
     abstract fun bindAuthManager(impl: AuthManagerImpl): AuthManager
+
+    @Binds
+    @Singleton
+    abstract fun bindPetStore(impl: PetStoreImpl): PetStore
 
 }
 
