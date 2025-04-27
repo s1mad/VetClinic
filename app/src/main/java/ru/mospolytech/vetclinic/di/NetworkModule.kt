@@ -13,6 +13,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import ru.mospolytech.vetclinic.data.api.AuthApi
+import ru.mospolytech.vetclinic.data.api.MetricsApi
 import ru.mospolytech.vetclinic.data.api.PetApi
 import ru.mospolytech.vetclinic.data.constant.VetClinicApiConstant
 import ru.mospolytech.vetclinic.data.util.AuthManager
@@ -84,5 +85,9 @@ object NetworkModule {
     @Provides
     @Singleton
     fun providePetApi(retrofit: Retrofit): PetApi = retrofit.create(PetApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideMetricsApi(retrofit: Retrofit): MetricsApi = retrofit.create(MetricsApi::class.java)
 
 }

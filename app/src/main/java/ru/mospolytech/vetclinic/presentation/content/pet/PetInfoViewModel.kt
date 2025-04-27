@@ -13,9 +13,14 @@ import kotlinx.serialization.Serializable
 import ru.mospolytech.vetclinic.data.util.onError
 import ru.mospolytech.vetclinic.data.util.onSuccess
 import ru.mospolytech.vetclinic.data.util.userMessage
+import ru.mospolytech.vetclinic.domain.model.Metric
 import ru.mospolytech.vetclinic.domain.model.Pet
+import ru.mospolytech.vetclinic.domain.repository.Interval
+import ru.mospolytech.vetclinic.domain.repository.MetricsRepository
 import ru.mospolytech.vetclinic.domain.repository.PetRepository
 import ru.mospolytech.vetclinic.domain.usecase.LogOutUseCase
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 abstract class PetInfoViewModel : ViewModel() {
@@ -30,7 +35,12 @@ abstract class PetInfoViewModel : ViewModel() {
         val petsLoading: Boolean = false,
         val error: String? = null,
         val showSelectPetDialog: Boolean = false,
-        val showConfirmLogOutDialog: Boolean = false
+        val showConfirmLogOutDialog: Boolean = false,
+        val metrics: List<Metric> = emptyList(),
+        val metricsLoading: Boolean = false,
+        val metricsError: String? = null,
+        val selectedMetricType: MetricType = MetricType.PULSE,
+        val selectedInterval: Interval = Interval.DAY
     )
 
     @Serializable
@@ -39,16 +49,23 @@ abstract class PetInfoViewModel : ViewModel() {
         data object SelectPetDialogDismiss : Event()
         data class SelectPet(val pet: Pet) : Event()
         data object TryAgainClick : Event()
-
         data object LogOutButtonClick : Event()
         data object LogOutDialogDismiss : Event()
         data object LogOutDialogConfirm : Event()
+        data class SelectMetricType(val metricType: MetricType) : Event()
+        data class SelectInterval(val interval: Interval) : Event()
     }
+}
+
+enum class MetricType {
+    PULSE,
+    TEMPERATURE
 }
 
 @HiltViewModel
 class PetInfoViewModelImpl @Inject constructor(
-    private val repo: PetRepository,
+    private val petRepo: PetRepository,
+    private val metricsRepo: MetricsRepository,
     private val logOut: LogOutUseCase
 ) : PetInfoViewModel() {
 
@@ -65,19 +82,30 @@ class PetInfoViewModelImpl @Inject constructor(
             Event.LogOutButtonClick -> _state.update { it.copy(showConfirmLogOutDialog = true) }
             Event.LogOutDialogConfirm -> viewModelScope.launch { logOut() }
             Event.LogOutDialogDismiss -> _state.update { it.copy(showConfirmLogOutDialog = false) }
+            is Event.SelectMetricType -> {
+                _state.update { it.copy(selectedMetricType = event.metricType) }
+                loadMetrics()
+            }
+            is Event.SelectInterval -> {
+                _state.update { it.copy(selectedInterval = event.interval) }
+                loadMetrics()
+            }
         }
     }
 
     private fun selectPet(pet: Pet) {
         _state.update { it.copy(selectedPet = pet, showSelectPetDialog = false) }
-        viewModelScope.launch { repo.saveSelectedPet(pet) }
+        viewModelScope.launch {
+            petRepo.saveSelectedPet(pet)
+            loadMetrics()
+        }
     }
 
     private fun loadPets() {
         _state.update { it.copy(selectedPetLoading = true, petsLoading = true) }
 
         val selectedPetJob = viewModelScope.launch {
-            val pet = repo.getSelectedPet()
+            val pet = petRepo.getSelectedPet()
             if (pet != null) {
                 _state.update { it.copy(selectedPet = pet, selectedPetLoading = false) }
             } else {
@@ -86,7 +114,7 @@ class PetInfoViewModelImpl @Inject constructor(
         }
 
         viewModelScope.launch {
-            repo.getAllPets()
+            petRepo.getAllPets()
                 .onSuccess { pets ->
                     if (pets.isEmpty()) {
                         _state.update {
@@ -97,7 +125,7 @@ class PetInfoViewModelImpl @Inject constructor(
                                 error = "Не нашли ваших питомцев"
                             )
                         }
-                        Log.d("asd", _state.value.toString())
+                        Log.d("PetInfoViewModel", _state.value.toString())
                         return@onSuccess
                     }
 
@@ -107,38 +135,73 @@ class PetInfoViewModelImpl @Inject constructor(
                     val selectedPet = _state.value.selectedPet
 
                     if (selectedPet == null) {
-
                         val pet = pets.firstOrNull()
                         _state.update { it.copy(selectedPet = pet, selectedPetLoading = false) }
-
                         if (pet != null) {
-                            repo.saveSelectedPet(pet)
+                            petRepo.saveSelectedPet(pet)
                         }
-
                     } else if (selectedPet !in pets) {
-
                         val updatedPet = pets.find { it.id == selectedPet.id }
-
                         if (updatedPet != null) {
                             _state.update { it.copy(selectedPet = updatedPet) }
-                            repo.saveSelectedPet(updatedPet)
+                            petRepo.saveSelectedPet(updatedPet)
                         } else {
                             val pet = pets.firstOrNull() ?: return@onSuccess
                             _state.update { it.copy(selectedPet = pet) }
-                            repo.saveSelectedPet(pet)
+                            petRepo.saveSelectedPet(pet)
                         }
-
                     }
+                    loadMetrics()
                 }
                 .onError { error ->
                     _state.update { it.copy(petsLoading = false, error = error.userMessage()) }
-
                     selectedPetJob.join()
                     _state.update { it.copy(selectedPetLoading = false) }
                 }
         }
     }
 
+    private fun loadMetrics() {
+        val pet = _state.value.selectedPet ?: return
+        val interval = _state.value.selectedInterval
+
+        _state.update { it.copy(metricsLoading = true, metricsError = null) }
+
+        viewModelScope.launch {
+            val toDate = ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT)
+            val fromDate = when (interval) {
+                Interval.MINUTE -> ZonedDateTime.now().minusHours(2).format(DateTimeFormatter.ISO_INSTANT)
+                Interval.HOUR -> ZonedDateTime.now().minusHours(24).format(DateTimeFormatter.ISO_INSTANT)
+                Interval.DAY -> ZonedDateTime.now().minusDays(7).format(DateTimeFormatter.ISO_INSTANT)
+                Interval.WEEK -> ZonedDateTime.now().minusWeeks(4).format(DateTimeFormatter.ISO_INSTANT)
+            }
+
+            metricsRepo.getMetrics(
+                interval = interval,
+                deviceId = pet.id,
+                fromDate = fromDate,
+                toDate = toDate
+            )
+                .onSuccess { metrics ->
+                    _state.update {
+                        it.copy(
+                            metrics = metrics,
+                            metricsLoading = false,
+                            metricsError = null
+                        )
+                    }
+                }
+                .onError { error ->
+                    _state.update {
+                        it.copy(
+                            metrics = emptyList(),
+                            metricsLoading = false,
+                            metricsError = error.userMessage()
+                        )
+                    }
+                }
+        }
+    }
 
     init {
         loadPets()

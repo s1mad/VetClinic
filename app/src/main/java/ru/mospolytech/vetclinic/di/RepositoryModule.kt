@@ -5,11 +5,12 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import ru.mospolytech.vetclinic.data.repository.AuthRepositoryImpl
+import ru.mospolytech.vetclinic.data.repository.FakeMetricsRepository
 import ru.mospolytech.vetclinic.data.repository.PetRepositoryImpl
 import ru.mospolytech.vetclinic.domain.repository.AuthRepository
+import ru.mospolytech.vetclinic.domain.repository.MetricsRepository
 import ru.mospolytech.vetclinic.domain.repository.PetRepository
 import javax.inject.Singleton
-
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -23,4 +24,11 @@ abstract class RepositoryBindsModule {
     @Singleton
     abstract fun bindPetRepository(impl: PetRepositoryImpl): PetRepository
 
+//    @Binds FIXME
+//    @Singleton
+//    abstract fun bindMetricRepository(impl: MetricsRepositoryImpl): MetricsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMetricRepository(impl: FakeMetricsRepository): MetricsRepository
 }
